@@ -7,44 +7,43 @@ using ProdutosAPI.Data;
 
 #nullable disable
 
-namespace ProdutosAPI.Migrations
+namespace ProdutosAPI.Migrations;
+
+[DbContext(typeof(ProdutoContext))]
+partial class ProdutoContextModelSnapshot : ModelSnapshot
 {
-    [DbContext(typeof(ProdutoContext))]
-    partial class ProdutoContextModelSnapshot : ModelSnapshot
+    protected override void BuildModel(ModelBuilder modelBuilder)
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
-        {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.6")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+        modelBuilder
+            .HasAnnotation("ProductVersion", "8.0.6")
+            .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+        NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ProdutosAPI.Models.Produto", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+        modelBuilder.Entity("ProdutosAPI.Models.Produto", b =>
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Nome")
-                        .IsRequired()
-                        .HasColumnType("varchar(50)");
+                b.Property<string>("Nome")
+                    .IsRequired()
+                    .HasColumnType("varchar(50)");
 
-                    b.Property<float>("PrecoUnitario")
-                        .HasColumnType("real");
+                b.Property<float>("PrecoUnitario")
+                    .HasColumnType("real");
 
-                    b.Property<string>("Tipo")
-                        .IsRequired()
-                        .HasColumnType("varchar(15)");
+                b.Property<string>("Tipo")
+                    .IsRequired()
+                    .HasColumnType("varchar(15)");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("Produtos");
-                });
+                b.ToTable("Produtos");
+            });
 #pragma warning restore 612, 618
-        }
     }
 }
