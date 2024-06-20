@@ -1,106 +1,126 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.JsonPatch;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProdutosAPI.Data;
 using ProdutosAPI.Data.Dtos;
-using ProdutosAPI.Models;
+using ProdutosAPI.Servicos;
 
 namespace ProdutosAPI.Controllers;
 
 [ApiController]
 [Route("api/[Controller]")]
+[Authorize]
 public class ProdutoController : ControllerBase
 {
-    private ProdutoContext _context;
-    private IMapper _mapper;
-    public ProdutoController(ProdutoContext context, IMapper mapper)
+    private readonly ProdutoServico _servico;
+    public ProdutoController(ProdutoServico servico)
     {
-        _context = context;
-        _mapper = mapper;
+        _servico = servico;
     }
-
+    /// <summary>
+    /// Adiciona um produto ao banco de dados
+    /// </summary>
+    /// <param name="produtoDto">Objeto com os campos necessários para criação de um produto</param>
+    /// <returns>IActionResult</returns>
+    /// <response code="201">Caso inserção seja feita com sucesso</response>
     [HttpPost]
-    public IActionResult AdicionaProduto([FromBody] CreateProdutoDto produtoDto)
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    public async Task<IActionResult> AdicionaProduto([FromBody] CreateProdutoDto produtoDto)
     {
 
-        Produto produto = _mapper.Map<Produto>(produtoDto);
+        var produto = await _servico.CadastraProduto(produtoDto);
 
-        _context.Produtos.Add(produto);
-        _context.SaveChanges();
         return CreatedAtAction(nameof(RecuperaProdutoPorId), new { id = produto.Id }, produto);
     }
 
+    /// <summary>
+    /// Recupera todos os produtos do banco de dados
+    /// </summary>
+    /// <param name="skip">Pode te ajudar a pular quantos resultados desejar</param>
+    /// <param name="take">Pode te ajudar a recuperar os dados em uma quantidade</param>
+    /// <returns> List </returns>
+    /// <response code="200">Caso a busca seja feita com sucesso</response>
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public IEnumerable<ReadProdutoDto> RecuperaTodosOsProdutos([FromHeader] int skip = 0, [FromHeader] int take = 50)
     {
 
-        return _mapper.Map<List<ReadProdutoDto>>(_context.Produtos.Skip(skip).Take(take));
+        return _servico.MostraProduto().Skip(skip).Take(take).ToList();
     }
 
+    /// <summary>
+    /// Recupera um produtos do banco de dados
+    /// </summary>
+    /// <param name="id">Parametro necessario para poder executar a busca no banco de dados</param>
+    /// <returns> IActionResult </returns>
+    /// <response code="200">Caso a busca seja feita com sucesso</response>
     [HttpGet("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public IActionResult RecuperaProdutoPorId(int id)
     {
-        var produto = _context.Produtos.FirstOrDefault(produto => produto.Id == id);
+        var produto = _servico.MostraProdutoPorId(id);
 
         if (produto == null)
         {
             return NotFound("O id passado não foi encontrado");
         }
 
-        var produtoDto = _mapper.Map<ReadProdutoDto>(produto);
-        return Ok(produtoDto);
+        return Ok(produto);
     }
 
+
+    /// <summary>
+    /// Atualiza o objeto que foi para o banco de dados
+    /// </summary>
+    /// <param name="id">Parametro necessario para executar a busca do objeto desejado no banco de dados</param>
+    /// <param name="produtoDto">Parametro necessario para passar os dados de atualização</param>
+    /// <returns> IActionResult </returns>
+    /// <response code="204">Caso a atualização do objeto seja feito com sucesso</response>
     [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public IActionResult AtuzalizaProduto(int id, [FromBody] UpdateProdutoDto produtoDto)
     {
-        var produto = _context.Produtos.FirstOrDefault(produto => produto.Id == id);
-        if (produto == null)
+        var resultado =  _servico.AtualizaProduto(id, produtoDto);
+        if (resultado)
         {
-            return NotFound("Produto para ser atualizado não encontrado");
-        }
+            return NoContent();
 
-        _mapper.Map(produtoDto, produto);
-        _context.SaveChanges();
-        return NoContent();
+        } 
+        return NotFound("Id do produto não encontrado na base de dados");
+
     }
 
-    [HttpPatch("{id}")]
-    public IActionResult AtualizaParcialmenteProduto(int id, JsonPatchDocument<UpdateProdutoDto> patch)
-    {
-        var produto = _context.Produtos.FirstOrDefault(produto => produto.Id == id);
-        if (produto == null) 
-        {
-            return NotFound("O id passado não foi encontrado");
-        }
-
-        var produtoParaAtualizar = _mapper.Map<UpdateProdutoDto>(produto);
-        
-        patch.ApplyTo(produtoParaAtualizar, ModelState);
-        
-        if(!TryValidateModel(produtoParaAtualizar))
-        {
-            return ValidationProblem(ModelState);
-        }
-
-        _mapper.Map(produtoParaAtualizar, produto);
-        _context.SaveChanges();
-        return NoContent();
-    }
-
+    /// <summary>
+    /// Deleta o objeto do banco de dados
+    /// </summary>
+    /// <param name="id">Parametro necessario para buscar e deletar no banco de dados</param>
+    /// <returns> IActionResult </returns>
+    /// <response code="204">Caso o objeto tenha sido deletado</response>
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public IActionResult DeletaProduto(int id)
     {
-        var produto = _context.Produtos.FirstOrDefault(produto => produto.Id == id);
+        bool resultado = _servico.DeletaProduto(id);
 
-        if(produto == null)
+        if(resultado == false)
         {
             return NotFound("Produto para ser deletado não encontrado");
         }
 
-        _context.Produtos.Remove(produto);
-        _context.SaveChanges();
         return NoContent();
+    }
+
+    /// <summary>
+    /// Faz uma query no banco onde busca o preço unitário médio segregado por tipo
+    /// </summary>
+    /// <returns> IActionResult </returns>
+    /// <response code="200">Caso o objeto tenha sido deletado</response>
+    [HttpGet("dashboard")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public IActionResult Dashboard()
+    {
+        var dashboard = _servico.RecuperaDadosDashboard();
+
+        return Ok(dashboard);
+
     }
 
 }

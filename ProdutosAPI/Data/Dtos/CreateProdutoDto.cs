@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.IO.Compression;
-
 namespace ProdutosAPI.Data.Dtos;
 
 public class CreateProdutoDto
@@ -10,10 +8,11 @@ public class CreateProdutoDto
     public string Nome { get; set; }
 
     [Required(ErrorMessage = "O tipo do seu produto é obrigatório")]
-    [AllowedValues("Material", "Serviço", ErrorMessage = "Esse tipo não corresponde a um dos tipos validos")]
+    [AllowedValues("Material", "Serviço", ErrorMessage = "Esse tipo não corresponde a um dos tipos validos." +
+        " Parametros validos para tipo: Material, Serviço")]
     public string Tipo { get; set; }
 
     [Required(ErrorMessage = "O preço do seu produto é obrigatório")]
-    [Range (0, float.MaxValue, ErrorMessage = "Seu número é muito pequeno ou muito grande")]
+    [Range (0.1, float.MaxValue, ErrorMessage = "O seu preço unitario deve ser maior que 0.1")]
     public float PrecoUnitario { get; set; }
 }

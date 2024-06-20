@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace ProdutosAPI.Data.Dtos;
+﻿namespace ProdutosAPI.Data.Dtos;
 
 public class ReadProdutoDto
 {

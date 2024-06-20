@@ -9,9 +9,8 @@ public class ProdutoProfile : Profile
     public ProdutoProfile() 
     {
 
-        CreateMap<CreateProdutoDto, Produto>(); //POST
-        CreateMap<Produto, ReadProdutoDto>();   //GET
-        CreateMap<UpdateProdutoDto, Produto>(); //UPDATE PUT
-        CreateMap<Produto, UpdateProdutoDto>(); //UPDATE PATCH
+        CreateMap<CreateProdutoDto, Produto>(); 
+        CreateMap<Produto, ReadProdutoDto>();  
+        CreateMap<UpdateProdutoDto, Produto>(); 
     }
 }

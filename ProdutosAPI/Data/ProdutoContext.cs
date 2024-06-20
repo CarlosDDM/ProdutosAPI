@@ -9,5 +9,6 @@ namespace ProdutosAPI.Data
         public ProdutoContext(DbContextOptions<ProdutoContext> opcoes) : base(opcoes){}
 
         public DbSet<Produto> Produtos { get; set; }
+
     }
 }

@@ -11,8 +11,8 @@ using ProdutosAPI.Data;
 namespace ProdutosAPI.Migrations
 {
     [DbContext(typeof(ProdutoContext))]
-    [Migration("20240616030917_CriandoTabelaDeProdutos")]
-    partial class CriandoTabelaDeProdutos
+    [Migration("20240620020534_testeDb")]
+    partial class testeDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
