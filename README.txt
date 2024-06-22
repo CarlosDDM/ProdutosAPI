@@ -20,10 +20,14 @@ Com isso seu banco de dados devera ter sido criado e instanciado.
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+Api usuário e senha:
+usuário  : admin
+password : password
+
 Perguntas:
 	1. Utilizei o princípio da responsabilidade única para a criação as classes
 do projeto e tambem utilizei o princípio de inversão de dependência para construir
-a classe do controller e do services. O motive da escolha deles se deve para deixar
+a classe do controller e do services. O motive da escolha de ambos se deve para deixar
 o codigo bem modularizado para facilitar a manutenção dele e deixar minhas classes
 fáceis de reaproveitar no codigo.
 
