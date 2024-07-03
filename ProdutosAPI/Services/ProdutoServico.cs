@@ -3,14 +3,15 @@ using Microsoft.EntityFrameworkCore;
 using ProdutosAPI.Data;
 using ProdutosAPI.Data.Dtos;
 using ProdutosAPI.Models;
+using ProdutosAPI.Services.Interfaces;
 using System.Collections;
 
 namespace ProdutosAPI.Servicos;
 
-public class ProdutoServico
+public class ProdutoServico : IProdutoServico
 {
-    private ProdutoContext _context;
-    private IMapper _mapper;
+    private readonly ProdutoContext _context;
+    private readonly IMapper _mapper;
     public ProdutoServico(ProdutoContext context, IMapper mapper)
     {
         _context = context;
@@ -23,22 +24,22 @@ public class ProdutoServico
 
         _context.Add(produto);
 
-        await _context.SaveChangesAsync();
+       await _context.SaveChangesAsync();
 
         return produto;
     }
 
-    public List<ReadProdutoDto> MostraProduto()
+    public async Task<List<ReadProdutoDto>> MostraProduto()
     {
-        var produtoDto = _mapper.Map<List<ReadProdutoDto>>(_context.Produtos.ToList());
+        var produtoDto = _mapper.Map<List<ReadProdutoDto>>(await _context.Produtos.ToListAsync());
 
         return produtoDto;
 
     }
 
-    public ReadProdutoDto? MostraProdutoPorId(int id)
+    public async Task<ReadProdutoDto?> MostraProdutoPorId(int id)
     {
-        var existe = RecuperaId(id);
+        var existe = await RecuperaId(id);
 
         if (existe != null)
         {
@@ -51,23 +52,23 @@ public class ProdutoServico
 
     }
 
-    public Produto? RecuperaId(int id) 
+    public async Task<Produto?> RecuperaId(int id) 
     {
 
-        return _context.Produtos.FirstOrDefault(produto => produto.Id == id);
+        return await _context.Produtos.FirstOrDefaultAsync(produto => produto.Id == id);
 
     }
 
-    public bool AtualizaProduto(int id, UpdateProdutoDto produtoDto)
+    public async Task<bool> AtualizaProduto(int id, UpdateProdutoDto produtoDto)
     {
-        var produto = RecuperaId(id);
+        var produto = await RecuperaId(id);
 
         bool resultado = false;
 
         if(produto != null)
         { 
             _mapper.Map(produtoDto, produto);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             resultado = true;
 
             return resultado;
@@ -75,37 +76,16 @@ public class ProdutoServico
 
         return resultado;
     }
-    /*
-    public bool AtualizaProdutoParcialmente(int id, JsonPatchDocument<UpdateProdutoDto> patch)
+
+    public async Task<bool> DeletaProduto(int id)
     {
-        var produto = RecuperaId(id);
-        if (produto != null) 
-        {
-            var produtoParaAtualizar = _mapper.Map<UpdateProdutoDto>(produto);
-
-            patch.ApplyTo(produtoParaAtualizar, ModelState);
-
-            if (!TryValidateModel(produtoParaAtualizar))
-            {
-                return ValidationProblem(ModelState);
-            }
-
-            _mapper.Map(produtoParaAtualizar, produto);
-            _context.SaveChanges();
-
-        }
-    }
-    */
-
-    public bool DeletaProduto(int id)
-    {
-        var produto = RecuperaId(id);
+        var produto = await RecuperaId(id);
         bool resultado = false;
 
         if (produto != null) 
         {
             _context.Produtos.Remove(produto);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             resultado = true;
 
             return resultado;
@@ -113,16 +93,16 @@ public class ProdutoServico
         return resultado;
     }
 
-    public IEnumerable RecuperaDadosDashboard()
+    public async Task<IEnumerable> RecuperaDadosDashboard()
     {
-        var dadoDashboard = _context.Produtos
+        var dadoDashboard = await _context.Produtos
             .GroupBy(produto => produto.Tipo)
             .Select(produto => new
             {
                 Tipo = produto.Key,
                 Quantidade = produto.Count(),
                 MediaPrecoUnitario = produto.Average(m => m.PrecoUnitario)
-            }).ToList();
+            }).ToListAsync();
 
         return dadoDashboard;
     }

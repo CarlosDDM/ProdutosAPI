@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using ProdutosAPI.Authentication;
 using ProdutosAPI.Data;
+using ProdutosAPI.Services.Interfaces;
 using ProdutosAPI.Servicos;
 using System.Reflection;
 
@@ -22,7 +23,7 @@ public class Program
 
         builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-        builder.Services.AddScoped<ProdutoServico>();
+        builder.Services.AddScoped<IProdutoServico, ProdutoServico>();
 
 
         builder.Services.AddControllers();

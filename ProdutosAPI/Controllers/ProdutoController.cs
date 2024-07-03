@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProdutosAPI.Data.Dtos;
-using ProdutosAPI.Servicos;
-
+using ProdutosAPI.Services.Interfaces;
 namespace ProdutosAPI.Controllers;
 
 [ApiController]
@@ -10,8 +9,8 @@ namespace ProdutosAPI.Controllers;
 [Authorize]
 public class ProdutoController : ControllerBase
 {
-    private readonly ProdutoServico _servico;
-    public ProdutoController(ProdutoServico servico)
+    private readonly IProdutoServico _servico;
+    public ProdutoController(IProdutoServico servico)
     {
         _servico = servico;
     }
@@ -40,10 +39,14 @@ public class ProdutoController : ControllerBase
     /// <response code="200">Caso a busca seja feita com sucesso</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public IEnumerable<ReadProdutoDto> RecuperaTodosOsProdutos([FromHeader] int skip = 0, [FromHeader] int take = 50)
+    public async Task<IEnumerable<ReadProdutoDto>> RecuperaTodosOsProdutos([FromQuery] int skip = 0, [FromQuery] int take = 50)
     {
+        var produtos = await _servico.MostraProduto();
 
-        return _servico.MostraProduto().Skip(skip).Take(take).ToList();
+        return produtos
+            .Skip(skip)
+            .Take(take)
+            .ToList();
     }
 
     /// <summary>
@@ -54,9 +57,9 @@ public class ProdutoController : ControllerBase
     /// <response code="200">Caso a busca seja feita com sucesso</response>
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public IActionResult RecuperaProdutoPorId(int id)
+    public async Task<IActionResult> RecuperaProdutoPorId(int id)
     {
-        var produto = _servico.MostraProdutoPorId(id);
+        var produto = await _servico.MostraProdutoPorId(id);
 
         if (produto == null)
         {
@@ -76,9 +79,9 @@ public class ProdutoController : ControllerBase
     /// <response code="204">Caso a atualização do objeto seja feito com sucesso</response>
     [HttpPut("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public IActionResult AtuzalizaProduto(int id, [FromBody] UpdateProdutoDto produtoDto)
+    public async Task<IActionResult> AtuzalizaProduto(int id, [FromBody] UpdateProdutoDto produtoDto)
     {
-        var resultado =  _servico.AtualizaProduto(id, produtoDto);
+        var resultado = await _servico.AtualizaProduto(id, produtoDto);
         if (resultado)
         {
             return NoContent();
@@ -96,9 +99,9 @@ public class ProdutoController : ControllerBase
     /// <response code="204">Caso o objeto tenha sido deletado</response>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public IActionResult DeletaProduto(int id)
+    public async Task<IActionResult> DeletaProduto(int id)
     {
-        bool resultado = _servico.DeletaProduto(id);
+        bool resultado = await _servico.DeletaProduto(id);
 
         if(resultado == false)
         {
@@ -115,9 +118,9 @@ public class ProdutoController : ControllerBase
     /// <response code="200">Caso o objeto tenha sido deletado</response>
     [HttpGet("dashboard")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public IActionResult Dashboard()
+    public async Task<IActionResult> Dashboard()
     {
-        var dashboard = _servico.RecuperaDadosDashboard();
+        var dashboard = await _servico.RecuperaDadosDashboard();
 
         return Ok(dashboard);
 
